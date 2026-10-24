@@ -15,7 +15,11 @@ COLUMNS = (
 
 
 def simulate(weather: Mapping[int, Weather]) -> list[dict[str, float]]:
-    """Bereken de standaardrun; alle rates gebruiken de toestand op tijd t."""
+    """Bereken de standaardrun; alle rates gebruiken de toestand op tijd t.
+
+    WEATHER bevat dagweer per dagnummer. Retourneer uitvoerregels met de
+    FST-kolomnamen uit COLUMNS; de eenheden staan in de README.
+    """
     time = p.sttime  # FST 1
     lai = tsum = wlvd = wst = wso = wrt = train = p.zero  # FST 1, 2, 3, 5
     wlvg = p.wlvi  # FST 1, 5
@@ -41,13 +45,31 @@ def simulate(weather: Mapping[int, Weather]) -> list[dict[str, float]]:
         rnintc = min(met.rain, 0.25 * lai)  # FST 6
         pevap, ptran = penman(davtmp, met.vp, dtr, lai, met.wn, rnintc)  # FST 6
         evap, tran = evaptr(
-            pevap, ptran, rootd, wa, p.wcad, p.wcwp, p.wcfc,
-            p.wcwet, p.wcst, p.tranco, p.delt,
+            pevap=pevap,
+            ptran=ptran,
+            rootd=rootd,
+            wa=wa,
+            wcad=p.wcad,
+            wcwp=p.wcwp,
+            wcfc=p.wcfc,
+            wcwet=p.wcwet,
+            wcst=p.wcst,
+            tranco=p.tranco,
+            delt=p.delt,
         )  # FST 6
         tranrf = tran / notnul(ptran)  # FST 6
         drain, runoff, irrig = drunir(
-            met.rain, rnintc, evap, tran, p.irrigf, p.drate,
-            p.delt, wa, rootd, p.wcfc, p.wcst,
+            rain=met.rain,
+            rnintc=rnintc,
+            evap=evap,
+            tran=tran,
+            irrigf=p.irrigf,
+            drate=p.drate,
+            delt=p.delt,
+            wa=wa,
+            rootd=rootd,
+            wcfc=p.wcfc,
+            wcst=p.wcst,
         )  # FST 6
         rwa = (met.rain + explor + irrig) - (rnintc + runoff + tran + evap + drain)  # FST 6
         parint = 0.5 * dtr * (1.0 - exp(-p.k * lai))  # FST 4
@@ -61,8 +83,19 @@ def simulate(weather: Mapping[int, Weather]) -> list[dict[str, float]]:
         fso = afgen(p.fsotb, tsum) * fshmod  # FST 5
         glv = flv * gtotal  # FST 3
         glai = gla(
-            time, p.doyem, dteff, tsum, p.laii, p.rgrl, p.delt,
-            p.sla, lai, glv, tranrf, wc, p.wcwp,
+            time=time,
+            doyem=p.doyem,
+            dteff=dteff,
+            tsum=tsum,
+            laii=p.laii,
+            rgrl=p.rgrl,
+            delt=p.delt,
+            sla=p.sla,
+            lai=lai,
+            glv=glv,
+            tranrf=tranrf,
+            wc=wc,
+            wcwp=p.wcwp,
         )  # FST 3
         rdrdv = insw(tsum - p.tsuman, 0.0, afgen(p.rdrt, davtmp))  # FST 3
         rdrsh = limit(0.0, p.rdrshm, p.rdrshm * (lai - p.laicr) / p.laicr)  # FST 3
@@ -81,7 +114,7 @@ def simulate(weather: Mapping[int, Weather]) -> list[dict[str, float]]:
             rows.append(dict(zip(COLUMNS, (
                 time, lai, wsotha, wso, wst, wlv, wrt, tsum, davtmp, dtr,
                 rootd, tran, evap, tranrf, wa, wc, float(met.year), met.rain, train,
-            ))))  # FST 1
+            ), strict=True)))  # FST 1
         if finished:  # FST 1
             break
         lai += rlai * p.delt  # FST 3

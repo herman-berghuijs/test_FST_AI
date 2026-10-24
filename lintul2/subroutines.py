@@ -5,7 +5,27 @@ from math import exp
 from .fst_functions import limit, notnul
 
 
-def gla(time, doyem, dteff, tsum, laii, rgrl, delt, sla, lai, glv, tranrf, wc, wcwp):
+def gla(
+    time: float,
+    doyem: float,
+    dteff: float,
+    tsum: float,
+    laii: float,
+    rgrl: float,
+    delt: float,
+    sla: float,
+    lai: float,
+    glv: float,
+    tranrf: float,
+    wc: float,
+    wcwp: float,
+) -> float:
+    """Bereken de dagelijkse bladoppervlaktetoename GLAI in m2/m2/d.
+
+    TIME en DOYEM zijn dagnummers; DELT is in dagen, DTEFF in graden Celsius
+    en TSUM in graaddagen. LAI en LAII zijn in m2/m2, RGRL per graaddag,
+    SLA in m2/g en GLV in g/m2/d. TRANRF is dimensieloos; WC en WCWP in m3/m3.
+    """
     # 1-op-1 port: vaste getallen blijven letterlijk staan; VERBETERSUGGESTIES.md #2.
     glai = sla * glv
     if tsum < 330.0 and lai < 0.75:
@@ -18,7 +38,19 @@ def gla(time, doyem, dteff, tsum, laii, rgrl, delt, sla, lai, glv, tranrf, wc, w
     return glai
 
 
-def penman(davtmp, vp, dtr, lai, wn, rnintc):
+def penman(
+    davtmp: float,
+    vp: float,
+    dtr: float,
+    lai: float,
+    wn: float,
+    rnintc: float,
+) -> tuple[float, float]:
+    """Bereken potentiele verdamping (PEVAP, PTRAN), beide in mm/d.
+
+    DAVTMP is in graden Celsius, VP in kPa, DTR in MJ/m2/d, LAI in m2/m2,
+    WN in m/s en RNINTC in mm/d.
+    """
     # 1-op-1 port: vaste getallen niet geparametriseerd; VERBETERSUGGESTIES.md #2.
     dtrjm2 = dtr * 1.0e6
     boltzm = 5.668e-8
@@ -40,7 +72,24 @@ def penman(davtmp, vp, dtr, lai, wn, rnintc):
     return pevap, ptran
 
 
-def evaptr(pevap, ptran, rootd, wa, wcad, wcwp, wcfc, wcwet, wcst, tranco, delt):
+def evaptr(
+    pevap: float,
+    ptran: float,
+    rootd: float,
+    wa: float,
+    wcad: float,
+    wcwp: float,
+    wcfc: float,
+    wcwet: float,
+    wcst: float,
+    tranco: float,
+    delt: float,
+) -> tuple[float, float]:
+    """Bereken actuele bodemverdamping en transpiratie (EVAP, TRAN) in mm/d.
+
+    PEVAP, PTRAN en TRANCO zijn in mm/d, ROOTD in m, WA in mm en DELT in dagen.
+    WCAD, WCWP, WCFC, WCWET en WCST zijn volumetrische vochtgehalten in m3/m3.
+    """
     wc = 0.001 * wa / rootd
     waad = 1000.0 * wcad * rootd
     evap = pevap * limit(0.0, 1.0, (wc - wcad) / (wcfc - wcad))
@@ -56,7 +105,24 @@ def evaptr(pevap, ptran, rootd, wa, wcad, wcwp, wcfc, wcwet, wcst, tranco, delt)
     return evap, tran
 
 
-def drunir(rain, rnintc, evap, tran, irrigf, drate, delt, wa, rootd, wcfc, wcst):
+def drunir(
+    rain: float,
+    rnintc: float,
+    evap: float,
+    tran: float,
+    irrigf: float,
+    drate: float,
+    delt: float,
+    wa: float,
+    rootd: float,
+    wcfc: float,
+    wcst: float,
+) -> tuple[float, float, float]:
+    """Bereken drainage, afstroming en beregening (DRAIN, RUNOFF, IRRIG) in mm/d.
+
+    RAIN, RNINTC, EVAP, TRAN en DRATE zijn in mm/d, WA in mm, ROOTD in m
+    en DELT in dagen. WCFC en WCST zijn in m3/m3; IRRIGF is dimensieloos.
+    """
     wafc = 1000.0 * wcfc * rootd
     wast = 1000.0 * wcst * rootd
     drain = limit(0.0, drate, (wa - wafc) / delt + (rain - rnintc - evap - tran))

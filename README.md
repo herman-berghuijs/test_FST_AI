@@ -17,22 +17,26 @@ eigenaardigheden zijn behouden; dit is geen verbeterd of opnieuw gekalibreerd mo
 De auteursrecht- en licentievermelding van het oorspronkelijke model staan in
 `LINTUL2.FST`. Deze port verleent geen aanvullende rechten op dat model.
 
-## Installeren, uitvoeren en testen
+## Vereiste: Python
 
-Gebruik Python 3.11 of nieuwer. Het model gebruikt uitsluitend de
-standaardbibliotheek; alleen de tests hebben pytest nodig. Vanuit de repository
-in PowerShell:
+Installeer **Python 3.11 of nieuwer**, bijvoorbeeld via
+[python.org](https://www.python.org/downloads/). Zorg dat `python` beschikbaar
+is in PowerShell en controleer de versie met `python --version`.
+
+Het model gebruikt uitsluitend de standaardbibliotheek. Om het vanuit deze
+repository te draaien zijn geen extra pakketten, pakketinstallatie of virtuele
+omgeving nodig.
+
+## Uitvoeren
+
+Open PowerShell in de hoofdmap van deze repository en voer uit:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[test]"
-.\.venv\Scripts\python.exe -m lintul2 uitvoer.dat
-.\.venv\Scripts\python.exe -m pytest -q -s
+python -m lintul2 uitvoer.dat
 ```
 
-Na activering van de omgeving kan dit ook met `python -m lintul2 uitvoer.dat`.
 Het standaardweerbestand is `NLD1.987` in de huidige werkmap. Met
-`--weather C:\pad\NLD1.987` kies je een ander pad. De installatie bundelt de
+`--weather C:\pad\NLD1.987` kies je een ander pad. Het Python-pakket bundelt de
 originele databestanden niet; houd ze apart beschikbaar. Een ontbrekend
 weerbestand of een ontbrekende gevraagde dag geeft een fout.
 
@@ -41,6 +45,47 @@ met een header en acht significante cijfers. De FST-commentaarpreambule en
 opvulspaties worden niet nagebootst; de uitvoer is numeriek, niet byte-voor-byte
 gelijk. Gebruik een nieuw uitvoerpad: de CLI weigert de oorspronkelijke
 bronbestanden en het gekozen weerbestand te overschrijven.
+
+### Eenheden van de uitvoer
+
+| Kolom(men) | Betekenis | Eenheid |
+|---|---|---|
+| TIME | Tijd binnen het jaar | dagnummer |
+| LAI | Bladoppervlakte per bodemoppervlakte | m2/m2 |
+| WSOTHA | Drogestof in opslagorganen | ton/ha |
+| WSO, WST, WLV, WRT | Drogestof in opslagorganen, stengels, bladeren en wortels | g/m2 |
+| TSUM | Temperatuursom na opkomst | graaddagen |
+| DAVTMP | Gemiddelde dagtemperatuur | graden Celsius |
+| DTR | Dagelijkse globale straling | MJ/m2/d |
+| ROOTD | Worteldiepte | m |
+| TRAN, EVAP | Actuele transpiratie en bodemverdamping | mm/d |
+| TRANRF | Actuele gedeeld door potentiele transpiratie, met FST-nulconventie | dimensieloos |
+| WA | Watervoorraad in de bewortelde bodem | mm |
+| WC | Volumetrisch vochtgehalte | m3/m3 |
+| YEAR | Jaar van de weergegevens | kalenderjaar |
+| RAIN | Dagelijkse neerslag | mm/d |
+| TRAIN | Neerslagsom sinds de start, tot en met de vorige dag | mm |
+
+De subroutines documenteren daarnaast de eenheden van hun argumenten en
+retourwaarden. Bij het opbouwen van een uitvoerregel geeft een verschil tussen
+het aantal kolomnamen en het aantal waarden een fout, in plaats van gegevens
+stilzwijgend weg te laten.
+
+## Testen (optioneel)
+
+Alleen voor de tests is pytest nodig. Een virtuele omgeving is hiervoor
+aanbevolen om testafhankelijkheden apart te houden van andere projecten;
+deze gebruikt je al geinstalleerde Python. Vanuit de hoofdmap:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[test]"
+.\.venv\Scripts\python.exe -m pytest -q -s
+```
+
+Een virtuele omgeving is optioneel. Als je al een geschikte omgeving gebruikt,
+kun je daarin `python -m pip install -e ".[test]"` en
+`python -m pytest -q -s` uitvoeren.
 
 ## Koppeling met FST
 
@@ -60,6 +105,13 @@ Elke vergelijking in `model.py` verwijst naar de FST-sectie. Per dag worden
 eerst alle hulpvariabelen en rates berekend uit de huidige toestand en het weer
 van die dag. Daarna volgt zo nodig uitvoer, de FINISH-controle en pas dan
 Euler-integratie. De integralen in de uitvoer lopen dus tot en met de vorige dag.
+
+## Modelverloop
+
+![Stroomschema van de dagelijkse LINTUL2-rekenlus: weer, gewasgroei, waterbalans, uitvoer en Euler-integratie.](docs/lintul2-rekenlus.png)
+
+De [Mermaid-bron van het diagram](docs/lintul2-rekenlus.mmd) is meegeleverd
+om de afbeelding later te kunnen bijwerken.
 
 ## Validatie en geconstateerde afwijkingen van de prompt
 

@@ -7,6 +7,12 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class Weather:
+    """Dagelijkse meetwaarden uit het CABO-weerbestand.
+
+    RDD is in J/m2/d, TMMN/TMMX in graden Celsius, VP in kPa, WN in m/s
+    en RAIN in mm/d; DAY is het dagnummer binnen YEAR.
+    """
+
     station: int
     year: int
     day: int
@@ -19,6 +25,7 @@ class Weather:
 
 
 def read_weather(path: str | Path) -> dict[int, Weather]:
+    """Lees meetdagen op dagnummer; zet straling van kJ/m2/d om naar J/m2/d."""
     days: dict[int, Weather] = {}
     metadata = False
     year = None

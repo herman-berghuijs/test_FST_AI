@@ -48,6 +48,15 @@ def test_regressie_alle_19_kolommen():
         print(f"{column}: {largest:.8g}")
 
 
+@pytest.mark.parametrize("columns", [EXPECTED_COLUMNS[:-1], (*EXPECTED_COLUMNS, "EXTRA")])
+def test_ongelijke_aantallen_kolommen_en_waarden_geven_fout(monkeypatch, columns):
+    from lintul2 import model
+
+    monkeypatch.setattr(model, "COLUMNS", columns)
+    with pytest.raises(ValueError, match="zip"):
+        model.simulate(read_weather(ROOT / "NLD1.987"))
+
+
 def test_controlepunten_en_euler_timing():
     rows = simulate(read_weather(ROOT / "NLD1.987"))
     assert rows[0]["WLV"] == pytest.approx(0.54545, abs=1e-5)
