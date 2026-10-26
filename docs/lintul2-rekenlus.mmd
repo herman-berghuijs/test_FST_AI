@@ -1,0 +1,25 @@
+---
+config:
+    theme: neutral
+    markdownAutoWrap: false
+    flowchart:
+        wrappingWidth: 380
+---
+flowchart TD
+    A["Gewas- en bodemparameters"] --> B["Begintoestand op dag 58"]
+    B --> C["Lees het weer van vandaag<br/>Temperatuur, straling, neerslag,<br/>wind en dampspanning"]
+
+    C --> D["Bepaal opkomst,<br/>temperatuursomtoename en wortelgroei"]
+    D --> E["Bereken de waterbalans<br/>Verdamping, transpiratie,<br/>beregening, drainage en afstroming"]
+    E --> F["Bepaal waterstressfactor TRANRF"]
+    F --> G["Bereken lichtonderschepping<br/>en totale drogestofgroei"]
+    G --> H["Verdeel groei over bladeren,<br/>stengels, wortels en opslagorganen<br/>Bereken ook bladveroudering"]
+
+    H --> I{"Uitvoermoment<br/>of stopdag?"}
+    I -->|Ja| J["Bewaar de 19 uitvoerwaarden"]
+    I -->|Nee| K{"Stopcriterium<br/>bereikt?"}
+    J --> K
+
+    K -->|Ja| L["Schrijf uitvoerbestand<br/>Referentierun eindigt op dag 241"]
+    K -->|Nee| M["Euler-stap van een dag<br/>Werk biomassa, bladoppervlak,<br/>worteldiepte, water en sommen bij"]
+    M --> C
